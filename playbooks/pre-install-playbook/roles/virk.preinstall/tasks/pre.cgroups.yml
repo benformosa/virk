@@ -1,0 +1,40 @@
+---
+####################################################################
+### Configure cgroups
+####################################################################
+# Test harness:
+#   make it pass
+#     ansible-playbook viya_pre_install_playbook.yml --tags cgroup -e use_pause=0
+
+- name: Install cgroup packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libcgroup
+    - libcgroup-tools
+  tags:
+    - cgroup
+
+- name: Start cgconfig service on RHEL 6
+  service:
+    name: cgconfig
+    enabled: yes
+    state: started
+  when: ansible_distribution == redhat_os_name|string and ansible_distribution_major_version == '6'
+  tags:
+    - cgroup
+
+- name: Check for cgroups mount
+  command: 'grep "cgroup /sys/fs/cgroup" /proc/self/mounts'
+  check_mode: no
+  changed_when: false
+  register: mount_cgroup
+  failed_when: "mount_cgroup.rc != 0"
+  tags:
+    - cgroup
+
+- debug:
+    msg: "{{ mount_cgroup }}"
+  tags:
+    - cgroup
