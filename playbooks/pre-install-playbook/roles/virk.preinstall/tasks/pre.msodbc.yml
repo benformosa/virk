@@ -1,0 +1,27 @@
+---
+####################################################################
+## Microsoft ODBC driver installation
+####################################################################
+# Test harness:
+#   make it pass
+#     ansible-playbook viya_pre_install_playbook.yml --tags msodbc -e use_pause=0
+
+- name: Remove old MS ODBC Driver packages
+  package:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - unixODBC-utf16
+    - unixODBC-utf16-devel
+  tags:
+    - msodbc
+
+- name: Install MS ODBC Driver package
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - msodbcsql17
+    - mssql-tools
+  tags:
+    - msodbc
