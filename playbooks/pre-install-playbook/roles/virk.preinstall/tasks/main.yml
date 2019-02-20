@@ -22,4 +22,5 @@
 - include: pre.swappiness_config.yml
 - include: pre.semaphores_config.yml
 - include: pre.sudoers.yml
+- include: pre.sso.yml
 - include: pre.other.yml

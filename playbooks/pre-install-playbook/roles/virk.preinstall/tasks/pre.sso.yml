@@ -1,0 +1,17 @@
+---
+####################################################################
+## Single Sign On for SAS Web Applications configuration
+####################################################################
+# Test harness:
+#   make it pass
+#     ansible-playbook viya_pre_install_playbook.yml --tags sso -e use_pause=0
+
+- name: Install SSO packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - krb5-workstation
+    - nfs-utils
+  tags:
+    - sso
