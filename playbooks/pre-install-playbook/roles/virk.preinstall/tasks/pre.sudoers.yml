@@ -1,0 +1,17 @@
+####################################################################
+### Ensure /usr/sbin in sudoers Defaults secure_path
+####################################################################
+# Test harness:
+#   make it pass
+#     ansible-playbook viya_pre_install_playbook.yml --tags sudoers -e use_pause=0
+
+- name: Ensure /usr/sbin in sudoers Defaults secure_path
+  lineinfile:
+    path: /etc/sudoers
+    regexp: '^Defaults\s+secure_path\s*=(?!.*/usr/sbin.*)'
+    line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin'
+    state: present
+    backrefs: yes
+    validate: '/usr/sbin/visudo --check --quiet --file=%s'
+  tags:
+    - sudoers
