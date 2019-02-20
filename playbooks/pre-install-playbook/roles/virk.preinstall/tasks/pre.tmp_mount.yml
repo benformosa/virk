@@ -1,0 +1,37 @@
+---
+####################################################################
+### Mount /tmp with exec option
+####################################################################
+# Test harness:
+#   make it pass
+#     ansible-playbook viya_pre_install_playbook.yml --tags tmp_mount -e use_pause=0
+
+- name: Get mount point of /tmp
+  shell: 'set -o pipefail  && df -P /tmp | tail -1 | awk "{print \$6}"'
+  args:
+    executable: /bin/bash
+  register: tmp_mount
+  check_mode: no
+  changed_when: false
+  failed_when: "( tmp_mount.rc != 0 ) or ( tmp_mount.stdout == '' )"
+  tags:
+    - prereq
+    - tmp_mount
+
+# exec option is default, so check if noexec option is set
+# See https://unix.stackexchange.com/q/152057
+# Only change if noexec is set. This prevents an update to fstab when using the defaults option
+- name: Set exec in /tmp mount options
+  mount:
+    path: "{{ tmp_mount_facts.mount }}"
+    src: "{{ tmp_mount_facts.device }}"
+    fstype: "{{ tmp_mount_facts.fstype }}"
+    opts: "{{ tmp_mount_facts.options | regex_replace(',*noexec') }}"
+    state: mounted
+  when: "('noexec' in tmp_mount_facts.options) and (tmp_mount.stdout != '')"
+  vars:
+    - tmp_mount_query: "[?mount=='{{ tmp_mount.stdout }}'] | [0]"
+    - tmp_mount_facts: "{{ ansible_mounts | json_query(tmp_mount_query) }}"
+  tags:
+    - prereq
+    - tmp_mount
