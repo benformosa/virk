@@ -57,6 +57,26 @@
     tags:
       - skipnamematchfail
 
+  - name: Get the value of hostname -s
+    shell: "hostname -s"
+    changed_when: False
+    check_mode: no
+    register: short_hostname
+
+  - name: "Assert that <hostname -s> is the hostname"
+    assert:
+      that:
+        - "'.' not in (short_hostname.stdout)"
+        - "(short_hostname.stdout) == ansible_hostname"
+        - "(short_hostname.stdout) in (full_hostname.stdout)"
+      msg: |
+        Your short hostname value ({{short_hostname.stdout}}) does not appear to be correct.
+        Check that it contains only the hostname, no dots, and matches the full hostname.
+        Add --skip-tags skipnamematchfail to bypass.
+    tags:
+      - skipnamematchfail
+
+
 
   ## end of hostname block
   tags:
